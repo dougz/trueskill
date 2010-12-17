@@ -1,0 +1,6 @@
+This is a simple Python implementation of the TrueSkill (TM) ranking
+system described here:
+
+   http://research.microsoft.com/en-us/projects/trueskill/
+
+You'll need SciPy installed to use it.
