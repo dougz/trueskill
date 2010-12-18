@@ -261,9 +261,10 @@ def DrawMargin(p, beta, total_players=2):
 INITIAL_MU = 25.0
 INITIAL_SIGMA = INITIAL_MU / 3.0
 
-def SetParameters(beta=None, epsilon=None, draw_probability=None):
+def SetParameters(beta=None, epsilon=None, draw_probability=None,
+                  gamma=None):
   """
-  Sets two global parameters used in the TrueSkill algorithm.
+  Sets three global parameters used in the TrueSkill algorithm.
 
   beta is a measure of how random the game is.  You can think of it as
   the difference in skill (mean) needed for the better player to have
@@ -278,10 +279,17 @@ def SetParameters(beta=None, epsilon=None, draw_probability=None):
   epsilon directly you can pass draw_probability instead (a number
   from 0 to 1, saying what fraction of games end in draws), and
   epsilon will be determined from that.  The default epsilon
-  corresponds to a draw probability of 0.1 (10%).
+  corresponds to a draw probability of 0.1 (10%).  (You should pass a
+  value for either epsilon or draw_probability, not both.)
+
+  gamma is a small amount by which a player's uncertainty (sigma) is
+  increased prior to the start of each game.  This allows us to
+  account for skills that vary over time; the effect of old games
+  on the estimate will slowly disappear unless reinforced by evidence
+  from new games.
   """
 
-  global BETA, EPSILON
+  global BETA, EPSILON, GAMMA
 
   if beta is None:
     BETA = INITIAL_SIGMA / 2.0
@@ -294,6 +302,11 @@ def SetParameters(beta=None, epsilon=None, draw_probability=None):
     EPSILON = DrawMargin(draw_probability, BETA)
   else:
     EPSILON = epsilon
+
+  if gamma is None:
+    GAMMA = INITIAL_SIGMA / 100.0
+  else:
+    GAMMA = gamma
 
 SetParameters()
 
@@ -328,7 +341,8 @@ def AdjustPlayers(players):
 
   # Create each layer of factor nodes.  At the top we have priors
   # initialized to the player's current skill estimate.
-  skill = [PriorFactor(s, Gaussian(mu=pl.skill[0], sigma=pl.skill[1]))
+  skill = [PriorFactor(s, Gaussian(mu=pl.skill[0],
+                                   sigma=pl.skill[1] + GAMMA))
            for (s, pl) in zip(ss, players)]
   skill_to_perf = [LikelihoodFactor(s, p, BETA**2)
                    for (s, p) in zip(ss, ps)]
