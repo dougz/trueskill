@@ -342,7 +342,7 @@ def AdjustPlayers(players):
   # Create each layer of factor nodes.  At the top we have priors
   # initialized to the player's current skill estimate.
   skill = [PriorFactor(s, Gaussian(mu=pl.skill[0],
-                                   sigma=pl.skill[1] + GAMMA))
+                                   sigma=sqrt(pl.skill[1] ** 2 + GAMMA ** 2)))
            for (s, pl) in zip(ss, players)]
   skill_to_perf = [LikelihoodFactor(s, p, BETA**2)
                    for (s, p) in zip(ss, ps)]
