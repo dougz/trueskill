@@ -97,6 +97,8 @@ class Gaussian(object):
   def __div__(self, other):
     return Gaussian(pi=self.pi-other.pi, tau=self.tau-other.tau)
 
+  __truediv__ = __div__
+
 
 class Variable(object):
   """ A variable node in the factor graph. """
